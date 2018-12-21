@@ -1,0 +1,78 @@
+---
+# tasks file for haproxy
+#
+
+- name: Installing haproxy
+  yum:
+    name: "{{ haproxy_pkg }}"
+    state: installed
+
+- name: Configure haproxy
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    validate: '/usr/sbin/haproxy -c -f %s'  
+  notify: restart_haproxy
+
+- name: Ensuring that we have a pkistore for haproxy
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ haproxy_tls_staging_dir }}"
+    - "{{ haproxy_tls_dir }}"
+
+- name: Importing haproxy-pem-tool
+  template:
+    src: haproxy-pem-tool.j2
+    dest: /usr/libexec/centos/haproxy-pem-tool
+    mode: 0750
+
+- name: Distributing TLS certs
+  copy: 
+    src: "{{ pkistore }}/{{ item.public_name }}.crt"
+    dest: "{{ haproxy_tls_staging_dir }}"
+  with_items: "{{ haproxy_vhosts }}"
+  notify: restart_haproxy
+  register: tls_certs
+
+- name: Distributing TLS CA chain crt
+  copy: 
+    src: "{{ pkistore }}/{{ item.public_name }}-CAChain.crt"
+    dest: "{{ haproxy_tls_staging_dir }}"
+  with_items: "{{ haproxy_vhosts }}"
+  
+- name: Distributing TLS keys
+  copy: 
+    src: "{{ pkistore }}/{{ item.public_name }}.key"
+    dest: "{{ haproxy_tls_staging_dir }}"
+  with_items: "{{ haproxy_vhosts }}"
+  
+- name: Producing the .pem for haproxy
+  command: /usr/libexec/centos/haproxy-pem-tool
+  when: tls_certs is changed
+
+- name: Opening up httpd rule
+  include_role:
+    name: iptables
+    tasks_from: custom-policy
+  vars:
+    iptables_policy_name: haproxy-http
+    iptables_protocol: tcp
+    iptables_port: "80"
+    iptables_source: "0.0.0.0/0"
+  tags:
+    - iptables
+
+- name: Opening up https rule
+  include_role:
+    name: iptables
+    tasks_from: custom-policy
+  vars:
+    iptables_policy_name: haproxy-https
+    iptables_protocol: tcp
+    iptables_port: "443"
+    iptables_source: "0.0.0.0/0"
+  tags:
+    - iptables
+

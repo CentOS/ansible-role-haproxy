@@ -1,0 +1,7 @@
+#!/bin/bash
+cd {{ haproxy_tls_staging_dir }}
+for cert in $(ls *.crt|grep -v CAChain) 
+  do
+  public_name="${cert/.crt}"
+  cat ${public_name}.key ${public_name}.crt ${public_name}-CAChain.crt > {{ haproxy_tls_dir }}/${public_name}.pem
+done

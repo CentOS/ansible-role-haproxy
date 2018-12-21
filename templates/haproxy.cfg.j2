@@ -1,0 +1,114 @@
+# This haproxy config file is managed by Ansible
+# Don't edit and contact infra team
+
+# Global settings from basic template
+global
+    log         127.0.0.1 local2
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     {{ haproxy_maxconn }}
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats level admin
+
+    # tuning DH params
+    tune.ssl.default-dh-param 2048
+    ssl-default-bind-ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256
+    ssl-default-bind-options no-sslv3 
+    ssl-default-server-ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256
+    ssl-default-server-options no-sslv3
+
+# defaults inherited for all vhosts and backends
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 {{ haproxy_maxconn }}
+
+#
+# Now all the Vhosts
+#
+
+# Starting with http
+frontend http-in
+        bind *:80
+	
+	# Vhosts
+	{% for vhost in haproxy_vhosts -%}
+	acl host_{{ vhost.name }} hdr(host) -i {{ vhost.public_name }}
+   	{% endfor %}
+
+	# Routing
+	{% for vhost in haproxy_vhosts -%}
+	use_backend {{ vhost.name }} if host_{{ vhost.name }}
+	{% endfor %}
+
+	# Default backend when no header/vhost found (catch all, like for a central certbot node for initial cert)
+	default_backend {{ haproxy_default_backend }}
+
+
+{% for vhost in haproxy_vhosts %}
+backend {{ vhost.name }}
+	balance roundrobin
+        option httpclose
+        option forwardfor
+        {% for node in vhost.backend_nodes -%}	
+	server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:80 check
+    	{% endfor %}
+
+{% endfor %}
+
+# TLS
+frontend https-in
+        bind *:443 ssl crt {{ haproxy_tls_dir }}
+        reqadd X-Forwarded-Proto:\ https        
+	
+	# Vhosts
+	{% for vhost in haproxy_vhosts -%}
+	acl host_{{ vhost.name }} hdr(host) -i {{ vhost.public_name }}
+   	{% endfor %}
+
+	# Routing
+	{% for vhost in haproxy_vhosts -%}
+	use_backend tls_{{ vhost.name }} if host_{{ vhost.name }}
+	{% endfor %}
+
+{% for vhost in haproxy_vhosts %}
+backend tls_{{ vhost.name }}
+	balance roundrobin
+        option httpclose
+        option forwardfor
+        {% for node in vhost.backend_nodes -%}
+        {% if node.tls_backend is defined and not node.tls_backend -%}	
+	server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:80 check 
+	{% else -%}
+	server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:443 check ssl verify none
+	{% endif -%}	
+    	{% endfor %}
+
+{% endfor %}
+
+ 
+# Enabling haproxy_stats
+listen stats 
+        bind *:9000  # Listen on localhost:9000
+        mode http
+        stats enable  # Enable stats page
+        stats hide-version  # Hide HAProxy version
+        stats uri /haproxy_stats  # Stats URI
+
