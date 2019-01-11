@@ -33,3 +33,11 @@ haproxy_vhosts:
         tls_backend: False  # Terminate the ssl connection
       - name: 192.168.1.1
         tls_frontend: False # Doesn't listen on https for that vhost (no cert)
+
+# Zabbix templates/groups (monitoring)
+zabbix_haproxy_templates:
+  - Template CentOS haproxy
+zabbix_haproxy_groups:
+  - CentOS Haproxy nodes
+
+        
