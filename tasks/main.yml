@@ -35,19 +35,27 @@
   with_items: "{{ haproxy_vhosts }}"
   notify: restart_haproxy
   register: tls_certs
+  loop_control:
+    label: '{{ item.public_name }}'
+
 
 - name: Distributing TLS CA chain crt
   copy: 
     src: "{{ pkistore }}/{{ item.public_name }}-CAChain.crt"
     dest: "{{ haproxy_tls_staging_dir }}"
   with_items: "{{ haproxy_vhosts }}"
+  loop_control:
+    label: '{{ item.public_name }}'
+
   
 - name: Distributing TLS keys
   copy: 
     src: "{{ pkistore }}/{{ item.public_name }}.key"
     dest: "{{ haproxy_tls_staging_dir }}"
   with_items: "{{ haproxy_vhosts }}"
-  
+  loop_control:
+    label: '{{ item.public_name }}'
+
 - name: Producing the .pem for haproxy
   command: /usr/libexec/centos/haproxy-pem-tool
   when: tls_certs is changed

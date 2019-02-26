@@ -9,7 +9,7 @@ haproxy_pkg: haproxy18
 haproxy_tls_dir: /etc/pki/tls/haproxy
 
 # Where to host the temporary .crt before concatenating them
-haproxy_tls_staging_dir: /etc/pki/tls/haproxy_stating
+haproxy_tls_staging_dir: /etc/pki/tls/haproxy_staging
 
 # Some default settings from haproxy
 haproxy_maxconn: 4000
