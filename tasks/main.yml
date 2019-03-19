@@ -7,6 +7,11 @@
     name: "{{ haproxy_pkg }}"
     state: installed
 
+- import_tasks: logging.yml
+  when: haproxy_local_log
+  tags:
+    - log
+
 - name: Configure haproxy
   template:
     src: haproxy.cfg.j2

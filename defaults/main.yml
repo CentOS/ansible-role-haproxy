@@ -14,6 +14,10 @@ haproxy_tls_staging_dir: /etc/pki/tls/haproxy_staging
 # Some default settings from haproxy
 haproxy_maxconn: 4000
 
+# Logging
+# Do we want by default to log to /var/log/haproxy.log ? 
+haproxy_local_log: True
+
 # Default backend that would catch all requests without header/vhost
 # Useful for a new node and so redirecting to a certbot/letscentrypt node
 # Needs to be defined in the haproxy_vhosts or it will fail

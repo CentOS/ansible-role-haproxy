@@ -3,7 +3,7 @@
 
 # Global settings from basic template
 global
-    log         127.0.0.1 local2
+    log         /dev/log local2
     nbthread	{{ ansible_processor_vcpus }}
     chroot      /var/lib/haproxy
     pidfile     /var/run/haproxy.pid

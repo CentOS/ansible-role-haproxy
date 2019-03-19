@@ -1,0 +1,34 @@
+- name: Creating needed directory for the chroot haproxy log device
+  file:
+    path: /var/lib/haproxy/dev/
+    state: directory
+
+- name: Creating haproxy log device
+  file:
+    path: /var/lib/haproxy/dev/log
+    state: touch
+
+- name: Bind mounting the log device for haproxy chroot
+  mount:
+    path: /var/lib/haproxy/dev/log
+    src: /dev/log
+    opts: bind
+    fstype: none
+    state: mounted 
+
+- name: Configuring rsyslog to send to specific log file
+  copy:
+    src: haproxy_local.conf
+    dest: /etc/rsyslog.d/haproxy_local.conf
+  register: rsyslog_haproxy
+
+- name: Reload rsyslog if needed
+  service:
+    name: rsyslog
+    state: restarted
+  when: rsyslog_haproxy is changed
+ 
+- name: Configuring logrotate
+  copy:
+    src: logrotate-haproxy
+    dest: /etc/logrotate.d/haproxy
