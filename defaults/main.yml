@@ -18,25 +18,31 @@ haproxy_maxconn: 4000
 # Do we want by default to log to /var/log/haproxy.log ? 
 haproxy_local_log: True
 
-# Default backend that would catch all requests without header/vhost
+# Default backend from haproxy_vhosts that would catch all requests without header/vhost
 # Useful for a new node and so redirecting to a certbot/letscentrypt node
-# Needs to be defined in the haproxy_vhosts or it will fail
+# Needs to be defined in the haproxy_vhosts or it will fail !
 haproxy_default_backend: vhost1
 
 # List of vhosts served through haproxy
 haproxy_vhosts:
   - name: vhost1
-    public_name: host.domain.com
+    public_name: host.domain.com # easy vhost listening on http and https and simply forwarding to backend based on request, so http=>http, https=>https, no redirect (should be done by backend httpd if needed)
     backend_nodes:
-      - name: backend1.internal
+      - name: backend1.internal 
       - name: backend2.internal  
   - name: vhost2
     public_name: host2.domain.com
     backend_nodes:
-      - name: backend3.external
-        tls_backend: False  # Terminate the ssl connection
+      - name: backend3.internal
+        tls_backend: False  # Terminate the ssl connection, so https on haproxy, but http on backend
       - name: 192.168.1.1
-        tls_frontend: False # Doesn't listen on https for that vhost (no cert)
+        tls_backend: False # 192.168.1.1 isn't listening on https, see above
+  - name: vhost3
+    public_name: openshift.domain.com
+    backend_nodes:
+      - name: openshift1
+        tls_backend_sni: True # Force sni passthrough for chained haproxy setup with openshift
+        tls_frontend_redirect: True # listens on http but redirects to https at haproxy level
 
 # Zabbix templates/groups (monitoring)
 zabbix_haproxy_templates:

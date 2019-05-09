@@ -12,13 +12,6 @@
   tags:
     - log
 
-- name: Configure haproxy
-  template:
-    src: haproxy.cfg.j2
-    dest: /etc/haproxy/haproxy.cfg
-    validate: '/usr/sbin/haproxy -c -f %s'  
-  notify: restart_haproxy
-
 - name: Ensuring that we have a pkistore for haproxy
   file:
     path: "{{ item }}"
@@ -88,6 +81,15 @@
     iptables_source: "0.0.0.0/0"
   tags:
     - iptables
+
+- name: Configure haproxy
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    validate: '/usr/sbin/haproxy -c -f %s'  
+  notify: restart_haproxy
+  tags:
+    - config
 
 - name: Configuring agent in Zabbix server
   include_role:
