@@ -1,6 +1,5 @@
 ---
 # tasks file for haproxy
-#
 
 - name: Installing haproxy
   yum:
@@ -19,12 +18,17 @@
   with_items:
     - "{{ haproxy_tls_staging_dir }}"
     - "{{ haproxy_tls_dir }}"
+  tags:
+    - tls
 
 - name: Importing haproxy-pem-tool
   template:
     src: haproxy-pem-tool.j2
     dest: /usr/libexec/centos/haproxy-pem-tool
     mode: 0750
+  tags:
+    - tls
+
 
 - name: Distributing TLS certs
   copy: 
@@ -35,7 +39,8 @@
   register: tls_certs
   loop_control:
     label: '{{ item.public_name }}'
-
+  tags:
+    - tls
 
 - name: Distributing TLS CA chain crt
   copy: 
@@ -44,8 +49,9 @@
   with_items: "{{ haproxy_vhosts }}"
   loop_control:
     label: '{{ item.public_name }}'
+  tags:
+    - tls
 
-  
 - name: Distributing TLS keys
   copy: 
     src: "{{ pkistore }}/{{ item.public_name }}.key"
@@ -53,10 +59,16 @@
   with_items: "{{ haproxy_vhosts }}"
   loop_control:
     label: '{{ item.public_name }}'
+  tags:
+    - tls
+
 
 - name: Producing the .pem for haproxy
   command: /usr/libexec/centos/haproxy-pem-tool
   when: tls_certs is changed
+  tags:
+    - tls
+
 
 - name: Opening up httpd rule
   include_role:
