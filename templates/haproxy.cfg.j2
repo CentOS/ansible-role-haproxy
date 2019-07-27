@@ -95,18 +95,22 @@ frontend https-in
 
 {% for vhost in haproxy_vhosts %}
 backend tls_{{ vhost.name }}
-	balance roundrobin
+        balance roundrobin
         option httpclose
         option forwardfor
+        {% if vhost.extra_config is defined and vhost.extra_config %}
+{{ vhost.extra_config | indent(8) }}
+        {% endif %}
+
         {% for node in vhost.backend_nodes -%}
         {% if node.tls_backend is defined and not node.tls_backend -%}	
-	server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:80 check 
+        server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:80 check 
         {% elif node.tls_backend_sni is defined and node.tls_backend_sni -%}
-	server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:443 ssl sni ssl_fc_sni check verify none 
-	{% else -%}
-	server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:443 check ssl verify none
-	{% endif -%}	
-    	{% endfor %}
+        server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:443 ssl sni ssl_fc_sni check verify none 
+        {% else -%}
+        server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:443 check ssl verify none
+        {% endif -%}
+        {% endfor %}
 
 {% endfor %}
 
