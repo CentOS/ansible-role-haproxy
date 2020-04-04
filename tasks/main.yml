@@ -103,13 +103,14 @@
   tags:
     - config
 
-- name: Configuring agent in Zabbix server
-  include_role:
-    name: zabbix-server
-    tasks_from: agent_config
-  vars:
-    zabbix_templates: "{{ zabbix_haproxy_templates }}"
-    zabbix_groups: "{{ zabbix_haproxy_groups }}"
+- block:
+    - name: Configuring agent in Zabbix server
+      include_role:
+        name: zabbix-server
+        tasks_from: agent_config
+      vars:
+        zabbix_templates: "{{ zabbix_haproxy_templates }}"
+        zabbix_groups: "{{ zabbix_haproxy_groups }}"
   delegate_to: "{{ zabbix_api_srv }}"  
   tags:
     - monitoring
