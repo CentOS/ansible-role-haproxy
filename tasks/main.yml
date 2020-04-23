@@ -4,7 +4,8 @@
 - name: Installing haproxy
   yum:
     name: "{{ haproxy_pkg }}"
-    state: installed
+    state: latest
+  notify: restart_haproxy  
 
 - import_tasks: logging.yml
   when: haproxy_local_log
