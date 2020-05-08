@@ -30,45 +30,45 @@
   tags:
     - tls
 
-- name: Distributing TLS certs
-  copy: 
-    src: "{{ pkistore }}/{{ item.public_name }}.crt"
-    dest: "{{ haproxy_tls_staging_dir }}"
-  with_items: "{{ haproxy_vhosts }}"
-  notify: restart_haproxy
-  register: tls_certs
-  loop_control:
-    label: '{{ item.public_name }}'
-  tags:
-    - tls
+- block:
+    - name: Distributing TLS certs
+      copy: 
+        src: "{{ pkistore }}/{{ item.public_name }}.crt"
+        dest: "{{ haproxy_tls_staging_dir }}"
+      with_items: "{{ haproxy_vhosts }}"
+      notify: restart_haproxy
+      register: tls_certs
+      loop_control:
+        label: '{{ item.public_name }}'
+      tags:
+        - tls
 
-- name: Distributing TLS CA chain crt
-  copy: 
-    src: "{{ pkistore }}/{{ item.public_name }}-CAChain.crt"
-    dest: "{{ haproxy_tls_staging_dir }}"
-  with_items: "{{ haproxy_vhosts }}"
-  loop_control:
-    label: '{{ item.public_name }}'
-  tags:
-    - tls
+    - name: Distributing TLS CA chain crt
+      copy: 
+        src: "{{ pkistore }}/{{ item.public_name }}-CAChain.crt"
+        dest: "{{ haproxy_tls_staging_dir }}"
+      with_items: "{{ haproxy_vhosts }}"
+      loop_control:
+        label: '{{ item.public_name }}'
+      tags:
+        - tls
 
-- name: Distributing TLS keys
-  copy: 
-    src: "{{ pkistore }}/{{ item.public_name }}.key"
-    dest: "{{ haproxy_tls_staging_dir }}"
-  with_items: "{{ haproxy_vhosts }}"
-  loop_control:
-    label: '{{ item.public_name }}'
-  tags:
-    - tls
+    - name: Distributing TLS keys
+      copy: 
+        src: "{{ pkistore }}/{{ item.public_name }}.key"
+        dest: "{{ haproxy_tls_staging_dir }}"
+      with_items: "{{ haproxy_vhosts }}"
+      loop_control:
+        label: '{{ item.public_name }}'
+      tags:
+        - tls
 
-
-- name: Producing the .pem for haproxy
-  command: /usr/libexec/centos/haproxy-pem-tool
-  when: tls_certs is changed
-  tags:
-    - tls
-
+    - name: Producing the .pem for haproxy
+      command: /usr/libexec/centos/haproxy-pem-tool
+      when: tls_certs is changed
+      tags:
+        - tls
+  when: "'revproxy' in haproxy_type" 
 
 - name: Opening up httpd rule
   include_role:
@@ -104,6 +104,15 @@
   notify: restart_haproxy
   tags:
     - config
+
+- name: Ensuring that haproxy can balance tcp ports
+  seboolean:
+    name: haproxy_connect_any
+    state: True
+    persistent: yes
+  when: "'ocp' in haproxy_type"
+  tags:
+    - selinux
 
 - block:
     - name: Configuring agent in Zabbix server

@@ -157,29 +157,29 @@ frontend openshift-master-api-2
 backend openshift-app-http-be
     balance source
     mode tcp
-    {% for server in group[haproxy_ocp_app_group] %}
-    server {{ server }} {{ hostvars[server].ip }}:80 check
+    {% for server in groups[haproxy_ocp_app_group] %}
+    server {{ server }} {{ server }}:80 check
     {% endfor %}
 
 backend openshift-app-https-be
     balance source
     mode tcp
-    {% for server in group[haproxy_ocp_app_group] %}
-    server {{ server }} {{ hostvars[server].ip }}:443 check
+    {% for server in groups[haproxy_ocp_app_group] %}
+    server {{ server }} {{ server }}:443 check
     {% endfor %}
 
 backend openshift-master-api-be
     balance roundrobin
     mode tcp
-    {% for server in group[haproxy_ocp_master_group] %}
-    server {{ server }} {{ hostvars[server].ip }}:6443 check
+    {% for server in groups[haproxy_ocp_master_group] %}
+    server {{ server }} {{ server }}:6443 check
     {% endfor %}
 
 backend openshift-master-api-2-be
     balance roundrobin
     mode tcp
-    {% for server in group[haproxy_ocp_master_group] %}
-    server {{ server }} {{ hostvars[server].ip }}:22623 check
+    {% for server in groups[haproxy_ocp_master_group] %}
+    server {{ server }} {{ server }}:22623 check
     {% endfor %}
 {% endif %}
 
