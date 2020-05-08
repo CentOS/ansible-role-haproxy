@@ -165,7 +165,7 @@ backend openshift-app-https-be
     balance source
     mode tcp
     {% for server in haproxy_ocp_app_nodes %}
-    server {{ server }}:6443 check
+    server {{ server }}:443 check
     {% endfor %}
 
 backend openshift-master-api-be
