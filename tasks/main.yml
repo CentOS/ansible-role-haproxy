@@ -30,7 +30,6 @@
   tags:
     - tls
 
-
 - name: Distributing TLS certs
   copy: 
     src: "{{ pkistore }}/{{ item.public_name }}.crt"
@@ -82,6 +81,7 @@
     iptables_source: "0.0.0.0/0"
   tags:
     - iptables
+  when: haproxy_public
 
 - name: Opening up https rule
   include_role:
@@ -94,6 +94,7 @@
     iptables_source: "0.0.0.0/0"
   tags:
     - iptables
+  when: haproxy_public
 
 - name: Configure haproxy
   template:

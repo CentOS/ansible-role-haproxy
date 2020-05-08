@@ -18,6 +18,11 @@ haproxy_maxconn: 4000
 # Do we want by default to log to /var/log/haproxy.log ? 
 haproxy_local_log: True
 
+# Do we want to automatically open tcp/80 and tcp/443 through iptables 
+# If false, you can open yourself/fine-tune which ports to use and from which hosts/networks
+# Useful for OCP deployments and tcp mode - see below
+haproxy_public: True
+
 # Default backend from haproxy_vhosts that would catch all requests without header/vhost
 # Useful for a new node and so redirecting to a certbot/letscentrypt node
 # Needs to be defined in the haproxy_vhosts or it will fail !
