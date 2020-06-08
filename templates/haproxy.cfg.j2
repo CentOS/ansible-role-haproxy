@@ -126,7 +126,7 @@ frontend "openshift-app-http-{{ env }}"
     {% for bindip in env.bindips %}
     bind {{ bindip }}:80
     {% endfor %}
-    default_"backend openshift-app-http-be-{{ env }}"
+    default_backend "openshift-app-http-be-{{ env }}"
     mode tcp
     option tcplog
 
