@@ -36,20 +36,22 @@ haproxy_type:
 # If we are of the revproxy type, what are the IPs that we should bind to
 haproxy_revproxy_bindips: ['*']
 
-# If we are of the ocp type, what are the IPs that we should bind to
-haproxy_ocp_bindips: []
 
-# The ansible group that contains nodes that we want to direct OCP master
-# traffic into the cluster We expect the `ip` attribute to be set in the
-# inventory hostvars, and we want this template to fail if we do not have this
-# set in inventory
-haproxy_ocp_master_group: ''
+# The environments dependent variables eg staging, prod etc
+haproxy_ocp_envs:
+  - name: prod # The environment name
+    bindips: [] # If we are of the ocp type, what are the IPs that we should bind to for this environment    
+    # The ansible group that contains nodes that we want to direct OCP master
+    # traffic into the cluster We expect the `ip` attribute to be set in the
+    # inventory hostvars, and we want this template to fail if we do not have this
+    # set in inventory
+    master_group: []
+    # The ansible group that contains nodes that we want to direct OCP application
+    # traffic into the cluster. We expect the `ip` attribute to be set in the
+    # inventory hostvars, and we want this template to fail if we do not have `ip`
+    # set in inventory
+    app_group: []
 
-# The ansible group that contains nodes that we want to direct OCP application
-# traffic into the cluster. We expect the `ip` attribute to be set in the
-# inventory hostvars, and we want this template to fail if we do not have `ip`
-# set in inventory
-haproxy_ocp_app_group: ''
 
 # List of vhosts served through haproxy
 haproxy_vhosts:
