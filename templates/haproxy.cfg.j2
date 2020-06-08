@@ -121,65 +121,65 @@ backend tls_{{ vhost.name }}
 {% endif %}
 
 {% if 'ocp' in haproxy_type %}
-{% for env in ocp_envs %}
-frontend "openshift-app-http-{{ env }}"
+{% for env in haproxy_ocp_envs %}
+frontend "openshift-app-http-{{ env.name }}"
     {% for bindip in env.bindips %}
     bind {{ bindip }}:80
     {% endfor %}
-    default_backend "openshift-app-http-be-{{ env }}"
+    default_backend "openshift-app-http-be-{{ env.name}}"
     mode tcp
     option tcplog
 
-frontend "openshift-app-https-{{ env }}"
+frontend "openshift-app-https-{{ env.name }}"
     {% for bindip in env.bindips %}
     bind {{ bindip }}:443
     {% endfor %}
-    default_backend "openshift-app-https-be-{{ env }}"
+    default_backend "openshift-app-https-be-{{ env.name }}"
     mode tcp
     option tcplog
 
-frontend "openshift-master-api-{{ env }}"
+frontend "openshift-master-api-{{ env.name }}"
     {% for bindip in env.bindips %}
     bind {{ bindip }}:6443
     {% endfor %}
-    default_backend "openshift-master-api-be-{{ env }}"
+    default_backend "openshift-master-api-be-{{ env.name }}"
     mode tcp
     option tcplog
 
 
-frontend "openshift-master-api-2-{{ env }}"
+frontend "openshift-master-api-2-{{ env.name }}"
     {% for bindip in env.bindips %}
     bind {{ bindip }}:22623
     {% endfor %}
-    default_backend "openshift-master-api-2-be-{{ env }}"
+    default_backend "openshift-master-api-2-be-{{ env.name }}"
     mode tcp
     option tcplog
 
-backend "openshift-app-http-be-{{ env }}"
+backend "openshift-app-http-be-{{ env.name }}"
     balance source
     mode tcp
-    {% for server in groups[env.haproxy_ocp_app_group] %}
+    {% for server in groups[env.app_group] %}
     server {{ server }} {{ server }}:80 check
     {% endfor %}
 
-backend "openshift-app-https-be-{{ env }}"
+backend "openshift-app-https-be-{{ env.name }}"
     balance source
     mode tcp
-    {% for server in groups[env.haproxy_ocp_app_group] %}
+    {% for server in groups[env.app_group] %}
     server {{ server }} {{ server }}:443 check
     {% endfor %}
 
-backend "openshift-master-api-be-{{ env }}"
+backend "openshift-master-api-be-{{ env.name }}"
     balance roundrobin
     mode tcp
-    {% for server in groups[env.haproxy_ocp_master_group] %}
+    {% for server in groups[env.master_group] %}
     server {{ server }} {{ server }}:6443 check
     {% endfor %}
 
-backend "openshift-master-api-2-be-{{ env }}"
+backend "openshift-master-api-2-be-{{ env.name }}"
     balance roundrobin
     mode tcp
-    {% for server in groups[env.haproxy_ocp_master_group] %}
+    {% for server in groups[env.master_group] %}
     server {{ server }} {{ server }}:22623 check
     {% endfor %}
 {% endfor %}
