@@ -45,12 +45,12 @@ haproxy_ocp_envs:
     # traffic into the cluster We expect the `ip` attribute to be set in the
     # inventory hostvars, and we want this template to fail if we do not have this
     # set in inventory
-    master_group: []
+    master_group: 
     # The ansible group that contains nodes that we want to direct OCP application
     # traffic into the cluster. We expect the `ip` attribute to be set in the
     # inventory hostvars, and we want this template to fail if we do not have `ip`
     # set in inventory
-    app_group: []
+    app_group: 
 
 
 # List of vhosts served through haproxy
