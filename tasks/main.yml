@@ -114,6 +114,12 @@
   tags:
     - selinux
 
+- name: Enabling service
+  service:
+    name: haproxy
+    state: started
+    enabled: True
+
 - block:
     - name: Configuring agent in Zabbix server
       include_role:
