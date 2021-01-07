@@ -50,17 +50,26 @@ haproxy_ocp_envs:
 
 
 # List of vhosts served through haproxy
+# Each one has specific different options like terminating TLS connection, or forward SNI or even custom ACL 
 haproxy_vhosts:
   - name: vhost1
     public_name: host.domain.com # easy vhost listening on http and https and simply forwarding to backend based on request, so http=>http, https=>https, no redirect (should be done by backend httpd if needed)
     backend_nodes:
       - name: backend1.internal 
       - name: backend2.internal  
+  - name: vhost1-no-post
+    public_name: nopost.domain.com 
+    # extra_config, if define will inject a block in jinja2 like for example denying POST requests to this vhost
+    extra_config: |+
+        acl valid_method method GET OPTION HEAD
+        http-request deny if !valid_method
+    backend_nodes:
+      - name: backend4.internal  
   - name: vhost2
     public_name: host2.domain.com
     backend_nodes:
       - name: backend3.internal
-        tls_backend: False  # Terminate the ssl connection, so https on haproxy, but http on backend
+        tls_backend: False  # Terminate the TLS connection, so https on haproxy, but http on backend
       - name: 192.168.1.1
         tls_backend: False # 192.168.1.1 isn't listening on https, see above
   - name: vhost3
