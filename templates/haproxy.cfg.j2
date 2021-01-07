@@ -63,8 +63,9 @@ frontend http-in
 	{% endfor %}
 
 	# Default backend when no header/vhost found (catch all, like for a central certbot node for initial cert)
+	{% if haproxy_default_backend|length %}
 	default_backend {{ haproxy_default_backend }}
-
+  {% endif %}
 
 {% for vhost in haproxy_vhosts %}
 backend {{ vhost.name }}

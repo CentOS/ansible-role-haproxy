@@ -1,10 +1,6 @@
 ---
 # defaults file for haproxy
 
-# Pkg name to install
-# We need a newer version in .el7 for better tls/SNI
-haproxy_pkg: haproxy18
-
 # Where haproxy will find its .pem concatenated files
 haproxy_tls_dir: /etc/pki/tls/haproxy
 

@@ -1,6 +1,12 @@
 ---
 # tasks file for haproxy
 
+- name: Importing specific distro variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+    - "{{ ansible_distribution }}.yml"
+
 - name: Installing haproxy
   yum:
     name: "{{ haproxy_pkg }}"
@@ -48,6 +54,8 @@
         src: "{{ pkistore }}/{{ item.public_name }}-CAChain.crt"
         dest: "{{ haproxy_tls_staging_dir }}"
       with_items: "{{ haproxy_vhosts }}"
+      register: tls_ca_certs
+      notify: restart_haproxy
       loop_control:
         label: '{{ item.public_name }}'
       tags:
@@ -65,7 +73,7 @@
 
     - name: Producing the .pem for haproxy
       command: /usr/libexec/centos/haproxy-pem-tool
-      when: tls_certs is changed
+      when: tls_certs is changed or tls_ca_certs is changed
       tags:
         - tls
   when: "'revproxy' in haproxy_type" 

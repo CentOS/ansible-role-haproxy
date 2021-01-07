@@ -1,0 +1,2 @@
+# We use specific rpm for haproxy on el7 and here is the name for it
+haproxy_pkg: haproxy18
