@@ -7,6 +7,13 @@
     - "{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
     - "{{ ansible_distribution }}.yml"
 
+- name: Allowing binding to (not present) VIP (floating IP)
+  sysctl:
+    name: net.ipv4.ip_nonlocal_bind
+    value: '1'
+    sysctl_set: yes
+    state: present
+
 - name: Installing haproxy
   yum:
     name: "{{ haproxy_pkg }}"
