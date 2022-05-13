@@ -29,9 +29,10 @@ haproxy_default_backend: vhost1
 haproxy_type:
   - revproxy
 
-# If we are of the revproxy type, what are the IPs that we should bind to
+# If we are of the revproxy type, what are the IPs and http/https that we should bind to
 haproxy_revproxy_bindips: ['*']
-
+haproxy_revproxy_http_port: 80
+haproxy_revproxy_https_port: 443
 
 # The environments dependent variables eg staging, prod etc
 haproxy_ocp_envs:
@@ -71,6 +72,7 @@ haproxy_vhosts:
       - name: backend3.internal
         tls_backend: False  # Terminate the TLS connection, so https on haproxy, but http on backend
       - name: 192.168.1.1
+        port: 81 # that backend node is listening on port 81 and not 80
         tls_backend: False # 192.168.1.1 isn't listening on https, see above
   - name: vhost3
     public_name: openshift.domain.com

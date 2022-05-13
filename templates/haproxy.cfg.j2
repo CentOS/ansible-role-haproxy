@@ -49,7 +49,7 @@ defaults
 # Starting with http
 frontend http-in
 {% for bindip in haproxy_revproxy_bindips %}
-        bind {{ bindip }}:80
+        bind {{ bindip }}:{{ haproxy_revproxy_http_port }}
 {% endfor %}
 	
 	# Vhosts
@@ -76,7 +76,7 @@ backend {{ vhost.name }}
         {% if node.tls_frontend_redirect is defined and node.tls_frontend_redirect -%}
         http-request redirect scheme https code 301 if !{ ssl_fc }
         {% else -%}
-	server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:80 check
+	server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:{{ node.port | default('80') }} check
         {% endif %}
     	{% endfor %}
 
@@ -85,7 +85,7 @@ backend {{ vhost.name }}
 # TLS
 frontend https-in
 {% for bindip in haproxy_revproxy_bindips %}
-        bind {{ bindip }}:443 ssl crt {{ haproxy_tls_dir }}
+        bind {{ bindip }}:{{ haproxy_revproxy_https_port }} ssl crt {{ haproxy_tls_dir }}
 {% endfor %}
         reqadd X-Forwarded-Proto:\ https        
 	
@@ -110,11 +110,11 @@ backend tls_{{ vhost.name }}
 
         {% for node in vhost.backend_nodes -%}
         {% if node.tls_backend is defined and not node.tls_backend -%}	
-        server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:80 check 
+        server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:{{ node.port | default('80') }} check 
         {% elif node.tls_backend_sni is defined and node.tls_backend_sni -%}
-        server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:443 ssl sni ssl_fc_sni check verify none 
+        server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:{{ node.port | default('443') }} ssl sni ssl_fc_sni check verify none 
         {% else -%}
-        server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:443 check ssl verify none
+        server {{ vhost.name }}-{{ loop.index }} {{ node.name }}:{{ node.port | default('443') }} check ssl verify none
         {% endif -%}
         {% endfor %}
 
