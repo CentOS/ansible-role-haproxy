@@ -34,6 +34,14 @@ haproxy_revproxy_bindips: ['*']
 haproxy_revproxy_http_port: 80
 haproxy_revproxy_https_port: 443
 
+# If you need to connect to some specific random ports on backend nodes
+# let's ensure we add these through selinux 
+# example:
+# haproxy_selinux_ports:
+#   - 9090
+#   - 9091
+haproxy_selinux_ports: []
+
 # The environments dependent variables eg staging, prod etc
 haproxy_ocp_envs:
   - name: prod # The environment name

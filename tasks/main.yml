@@ -111,6 +111,17 @@
     - iptables
   when: haproxy_public
 
+- name: Adding ports to selinux if needed
+  community.general.seport:
+    ports: "{{ item }}"
+    proto: tcp
+    setype: http_port_t
+    state: present
+  notify: restart_haproxy
+  with_items: "{{ haproxy_selinux_ports }}"
+  tags:
+    - selinux
+
 - name: Configure haproxy
   template:
     src: haproxy.cfg.j2
