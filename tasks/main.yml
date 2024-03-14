@@ -155,5 +155,8 @@
         zabbix_templates: "{{ zabbix_haproxy_templates }}"
         zabbix_groups: "{{ zabbix_haproxy_groups }}"
   delegate_to: "{{ zabbix_api_srv }}"  
+  when: 
+    - zabbix_api_srv is defined 
+    - zabbix_api_srv != 'None'
   tags:
     - monitoring
