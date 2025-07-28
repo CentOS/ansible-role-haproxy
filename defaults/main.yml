@@ -92,6 +92,7 @@ haproxy_vhosts:
 # Zabbix templates/groups (monitoring)
 zabbix_haproxy_templates:
   - Template CentOS haproxy
+  - Template CentOS - https SSL Cert Check External
 zabbix_haproxy_groups:
   - CentOS Haproxy nodes
 
