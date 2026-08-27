@@ -101,7 +101,7 @@ frontend https-in
 	
 	# Vhosts
 	{% for vhost in haproxy_vhosts -%}
-	acl host_{{ vhost.name }} hdr(host) -i {{ vhost.public_name }}
+	acl host_{{ vhost.name }} hdr(host) -i {{ vhost.public_name }} {{ vhost.public_aliases | default('') }}
    	{% endfor %}
 
 	# Routing

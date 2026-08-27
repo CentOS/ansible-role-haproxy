@@ -88,6 +88,12 @@ haproxy_vhosts:
       - name: openshift1
         tls_backend_sni: True # Force sni passthrough for chained haproxy setup with openshift
         tls_frontend_redirect: True # listens on http but redirects to https at haproxy level
+  - name: vhost4
+    public_name: vhost4.domain.com
+    public_aliases: vhost4.domain.org host.domain.com # in case we want our haproxy to also include some alternate SANs in cert and listen for this
+    backend_nodes:
+      - name: backend5.internal
+        tls_frontend_redirect: True
 
 # Zabbix templates/groups (monitoring)
 zabbix_haproxy_templates:
